@@ -1,0 +1,38 @@
+flowchart LR
+  Client["Client REST / navigateur"]
+  subgraph Commandes["Commandes · 127.0.0.1:3000"]
+    REST["REST TP1-TP3<br/>(inchangé)"]
+    Prep["POST /api/orders/:id/preparation"]
+    Pub["publishConfirmed"]
+    WS["WebSocket /ws/orders"]
+  end
+  subgraph Stocks["Stocks (TP2-TP3)"]
+    SH["HTTP :3001"]
+    SG["gRPC :50051"]
+  end
+  subgraph Broker["RabbitMQ · 127.0.0.1:5672"]
+    XC{{"orders.commands"}}
+    QP[("orders.prepare")]
+    XR{{"orders.retry"}}
+    QR[("retry 2 s / 5 s / 10 s")]
+    XD{{"orders.dead"}}
+    DLQ[("orders.prepare.dlq")]
+  end
+  subgraph Worker["preparation-worker (1 à n instances, prefetch 2, ACK manuel)"]
+    Cons["Consommation + validation"]
+    Retry["Retries"]
+    Idem["prepareIdempotently"]
+  end
+  PG[("PostgreSQL :55432<br/>processed_operations<br/>prepared_orders")]
+  Client --> REST
+  Client --> Prep --> Pub
+  REST -- "Stocks" --> SH
+  REST -- "gRPC" --> SG
+  Client <-- "événements" --> WS
+  Pub -- "order.prepare (confirm + mandatory)" --> XC --> QP
+  QP -- "livraison" --> Cons
+  Cons --> Idem --> PG
+  Cons -- "erreur temporaire" --> Retry -- "retry.1/2/3" --> XR --> QR
+  QR -- "TTL puis dead-letter : order.prepare" --> XC
+  Cons -- "rejet définitif (nack)" --> QP
+  QP -- "dead-letter : order.failed" --> XD --> DLQ

@@ -1,0 +1,38 @@
+flowchart TB
+  XC{{"Exchange orders.commands<br/>direct, durable"}}
+  QP[("Queue orders.prepare<br/>durable<br/>DLX = orders.dead, clé order.failed")]
+  XR{{"Exchange orders.retry<br/>direct, durable"}}
+  Q2[("orders.retry.2s<br/>TTL 2000 ms")]
+  Q5[("orders.retry.5s<br/>TTL 5000 ms")]
+  Q10[("orders.retry.10s<br/>TTL 10000 ms")]
+  XD{{"Exchange orders.dead<br/>direct, durable"}}
+  DLQ[("Queue orders.prepare.dlq<br/>durable")]
+  XC -- "binding order.prepare" --> QP
+  XR -- "binding retry.1" --> Q2
+  XR -- "binding retry.2" --> Q5
+  XR -- "binding retry.3" --> Q10
+  Q2 -. "TTL échu : dead-letter<br/>orders.commands / order.prepare" .-> XC
+  Q5 -. "idem" .-> XC
+  Q10 -. "idem" .-> XC
+  QP -. "rejet (nack sans requeue) : dead-letter<br/>orders.dead / order.failed" .-> XD
+  XD -- "binding order.failed" --> DLQ
+
+%% ───────── TP5 : diffusion d'événements (ressources AJOUTÉES) ─────────
+flowchart TB
+  XB{{"business.events<br/>topic, durable"}}
+  QN[("notifications.events")]
+  QS[("statistics.events")]
+  QA[("audit.events")]
+  XB -- "order.shipped" --> QN
+  XB -- "order.*" --> QS
+  XB -- "#" --> QA
+  XRT{{"business.retry (direct)"}}
+  XRQ{{"business.requeue (direct)"}}
+  XDD{{"business.dead (direct)"}}
+  QN -. "retryLater [notifications.retry]" .-> XRT
+  QS -. "retryLater [statistics.retry]" .-> XRT
+  QA -. "retryLater [audit.retry]" .-> XRT
+  XRT --> R[("<consumer>.events.retry<br/>TTL 3 s")]
+  R -. "TTL échu : [<consumer>]" .-> XRQ --> Q[("<consumer>.events (sa queue seulement)")]
+  QN -. "deadLetter [notifications]" .-> XDD
+  XDD --> D[("<consumer>.events.dlq")]

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package inventory.v1;
+
+// Contrat interne Commandes -> Stocks. Les numéros de champs sont stables : ne pas les modifier.
+service StockService {
+  rpc GetStock(StockRequest) returns (StockResponse);
+}
+
+message StockRequest { string product_id = 1; }
+
+message StockResponse {
+  string product_id = 1;
+  int32 available = 2;
+  bool reservable = 3;
+}

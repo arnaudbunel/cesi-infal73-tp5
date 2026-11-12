@@ -1,0 +1,64 @@
+# Infrastructure de LABORATOIRE du TP5 (socle TP4 + événements) : RabbitMQ (+ Management) et PostgreSQL, liés à 127.0.0.1.
+# Données de test jetables, identifiants factices : ne jamais réutiliser ce fichier en production.
+# Démarrage conseillé : npm run setup  (attend les health checks, applique la topologie et les migrations).
+name: infal73-tp5
+
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    hostname: infal73-tp5-rabbit
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-lab}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-lab-only-change-me}
+    ports:
+      - "127.0.0.1:${RABBITMQ_AMQP_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MGMT_PORT:-15672}:15672"
+    volumes:
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/conf.d/20-lab.conf:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 5s
+      timeout: 10s
+      retries: 24
+      start_period: 10s
+    stop_grace_period: 20s
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lab-only-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-infal73_tp5_lab}
+    ports:
+      # 55432 : évite le conflit avec un PostgreSQL local déjà présent sur 5432.
+      - "127.0.0.1:${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - infal73_tp5_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  # Optionnel : worker en conteneur (profil "worker"). Par défaut, lancez-le sur l'hôte : npm run dev:worker
+  preparation-worker:
+    profiles: ["worker"]
+    image: node:24-alpine
+    working_dir: /app
+    command: ["node_modules/.bin/tsx", "apps/preparation-worker/src/server.ts"]
+    volumes:
+      - .:/app:ro
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-lab}:${RABBITMQ_PASSWORD:-lab-only-change-me}@rabbitmq:5672
+      DATABASE_URL: postgres://${POSTGRES_USER:-lab}:${POSTGRES_PASSWORD:-lab-only-change-me}@postgres:5432/${POSTGRES_DB:-infal73_tp5_lab}
+      WORKER_NAME: worker-compose
+      LAB_STATE_DIR: /tmp/lab-state
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    stop_grace_period: 10s
+
+volumes:
+  infal73_tp5_pgdata:

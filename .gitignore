@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.log
+results/
+.idea/
+.vscode/
+.lab-state/
+/CLAUDE.md

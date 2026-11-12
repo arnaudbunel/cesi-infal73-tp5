@@ -1,0 +1,21 @@
+{
+  "name": "@infal73/order-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "fastify": "^5.12.8",
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/websocket": "^11.3.7",
+    "@grpc/grpc-js": "^1.14.7",
+    "@grpc/proto-loader": "^0.8.1",
+    "@infal73/contracts": "1.0.0",
+    "@infal73/messaging": "1.0.0",
+    "amqplib": "2.3.1"
+  }
+}

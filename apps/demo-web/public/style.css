@@ -1,0 +1,8 @@
+body { font-family: system-ui, sans-serif; max-width: 52rem; margin: 1rem auto; padding: 0 1rem; }
+h1 small { font-size: .5em; color: #a33; font-weight: normal; }
+section { border: 1px solid #ccc; border-radius: 6px; padding: .5rem 1rem; margin: .8rem 0; }
+button { margin: .2rem; }
+dl { display: grid; grid-template-columns: 8rem 1fr; gap: .2rem; }
+dt { font-weight: bold; }
+dd { margin: 0; font-family: monospace; }
+#log { background: #111; color: #cfc; padding: .5rem; height: 16rem; overflow: auto; white-space: pre-wrap; }

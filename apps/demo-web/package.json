@@ -1,0 +1,6 @@
+{
+  "name": "@infal73/demo-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mini-interface locale de démonstration (fichiers statiques, sans build), servie par order-service sur /demo/."
+}

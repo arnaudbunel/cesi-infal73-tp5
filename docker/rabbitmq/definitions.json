@@ -1,0 +1,359 @@
+{
+  "exchanges": [
+    {
+      "name": "orders.commands",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "orders.retry",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "orders.dead",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "business.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "business.retry",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "business.requeue",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "business.dead",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "orders.prepare",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "orders.dead",
+        "x-dead-letter-routing-key": "order.failed"
+      }
+    },
+    {
+      "name": "orders.retry.2s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 2000,
+        "x-dead-letter-exchange": "orders.commands",
+        "x-dead-letter-routing-key": "order.prepare"
+      }
+    },
+    {
+      "name": "orders.retry.5s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "orders.commands",
+        "x-dead-letter-routing-key": "order.prepare"
+      }
+    },
+    {
+      "name": "orders.retry.10s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 10000,
+        "x-dead-letter-exchange": "orders.commands",
+        "x-dead-letter-routing-key": "order.prepare"
+      }
+    },
+    {
+      "name": "orders.prepare.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "notifications.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "business.dead",
+        "x-dead-letter-routing-key": "notifications"
+      }
+    },
+    {
+      "name": "notifications.events.retry",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 3000,
+        "x-dead-letter-exchange": "business.requeue",
+        "x-dead-letter-routing-key": "notifications"
+      }
+    },
+    {
+      "name": "notifications.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "statistics.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "business.dead",
+        "x-dead-letter-routing-key": "statistics"
+      }
+    },
+    {
+      "name": "statistics.events.retry",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 3000,
+        "x-dead-letter-exchange": "business.requeue",
+        "x-dead-letter-routing-key": "statistics"
+      }
+    },
+    {
+      "name": "statistics.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "audit.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "business.dead",
+        "x-dead-letter-routing-key": "audit"
+      }
+    },
+    {
+      "name": "audit.events.retry",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 3000,
+        "x-dead-letter-exchange": "business.requeue",
+        "x-dead-letter-routing-key": "audit"
+      }
+    },
+    {
+      "name": "audit.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "orders.commands",
+      "vhost": "/",
+      "destination": "orders.prepare",
+      "destination_type": "queue",
+      "routing_key": "order.prepare",
+      "arguments": {}
+    },
+    {
+      "source": "orders.retry",
+      "vhost": "/",
+      "destination": "orders.retry.2s",
+      "destination_type": "queue",
+      "routing_key": "retry.1",
+      "arguments": {}
+    },
+    {
+      "source": "orders.retry",
+      "vhost": "/",
+      "destination": "orders.retry.5s",
+      "destination_type": "queue",
+      "routing_key": "retry.2",
+      "arguments": {}
+    },
+    {
+      "source": "orders.retry",
+      "vhost": "/",
+      "destination": "orders.retry.10s",
+      "destination_type": "queue",
+      "routing_key": "retry.3",
+      "arguments": {}
+    },
+    {
+      "source": "orders.dead",
+      "vhost": "/",
+      "destination": "orders.prepare.dlq",
+      "destination_type": "queue",
+      "routing_key": "order.failed",
+      "arguments": {}
+    },
+    {
+      "source": "business.events",
+      "vhost": "/",
+      "destination": "notifications.events",
+      "destination_type": "queue",
+      "routing_key": "order.shipped",
+      "arguments": {}
+    },
+    {
+      "source": "business.retry",
+      "vhost": "/",
+      "destination": "notifications.events.retry",
+      "destination_type": "queue",
+      "routing_key": "notifications.retry",
+      "arguments": {}
+    },
+    {
+      "source": "business.requeue",
+      "vhost": "/",
+      "destination": "notifications.events",
+      "destination_type": "queue",
+      "routing_key": "notifications",
+      "arguments": {}
+    },
+    {
+      "source": "business.dead",
+      "vhost": "/",
+      "destination": "notifications.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "notifications",
+      "arguments": {}
+    },
+    {
+      "source": "business.events",
+      "vhost": "/",
+      "destination": "statistics.events",
+      "destination_type": "queue",
+      "routing_key": "order.*",
+      "arguments": {}
+    },
+    {
+      "source": "business.retry",
+      "vhost": "/",
+      "destination": "statistics.events.retry",
+      "destination_type": "queue",
+      "routing_key": "statistics.retry",
+      "arguments": {}
+    },
+    {
+      "source": "business.requeue",
+      "vhost": "/",
+      "destination": "statistics.events",
+      "destination_type": "queue",
+      "routing_key": "statistics",
+      "arguments": {}
+    },
+    {
+      "source": "business.dead",
+      "vhost": "/",
+      "destination": "statistics.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "statistics",
+      "arguments": {}
+    },
+    {
+      "source": "business.events",
+      "vhost": "/",
+      "destination": "audit.events",
+      "destination_type": "queue",
+      "routing_key": "#",
+      "arguments": {}
+    },
+    {
+      "source": "business.retry",
+      "vhost": "/",
+      "destination": "audit.events.retry",
+      "destination_type": "queue",
+      "routing_key": "audit.retry",
+      "arguments": {}
+    },
+    {
+      "source": "business.requeue",
+      "vhost": "/",
+      "destination": "audit.events",
+      "destination_type": "queue",
+      "routing_key": "audit",
+      "arguments": {}
+    },
+    {
+      "source": "business.dead",
+      "vhost": "/",
+      "destination": "audit.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "audit",
+      "arguments": {}
+    }
+  ]
+}

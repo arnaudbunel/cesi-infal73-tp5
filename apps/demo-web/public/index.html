@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>TP3 - Suivi de commande (démo locale)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/demo/style.css">
+</head>
+<body data-app="infal73-tp3-demo">
+  <h1>Suivi de commande <small>laboratoire local — http, non chiffré</small></h1>
+
+  <section>
+    <h2>1. Identité (session serveur)</h2>
+    <label>Utilisateur
+      <select id="user"><option value="alice">Alice</option><option value="bob">Bob</option></select>
+    </label>
+    <button id="login">Se connecter (session)</button>
+    <span id="session">session : aucune</span>
+  </section>
+
+  <section>
+    <h2>2. Commande suivie</h2>
+    <label>Commande <input id="orderId" value="ORD-102" size="9"></label>
+    <button id="connect">Connexion WS</button>
+    <button id="subscribe">Abonnement</button>
+    <button id="disconnect">Déconnexion</button>
+    <button id="reconnect">Reconnexion</button>
+    <button id="drop">Simuler coupure</button>
+    <button id="refresh">Actualiser REST</button>
+    <dl>
+      <dt>Socket</dt><dd id="socketState">fermée</dd>
+      <dt>Abonnement</dt><dd id="subState">aucun</dd>
+      <dt>Status</dt><dd id="status">—</dd>
+      <dt>Sequence</dt><dd id="sequence">—</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>3. Outil de test (logique métier existante)</h2>
+    <p>Chaque bouton appelle la route REST de transition du TP1 : aucune modification directe de <code>status</code> ou <code>sequence</code>.</p>
+    <button class="transition" data-status="CONFIRMED">PATCH → CONFIRMED</button>
+    <button class="transition" data-status="SHIPPED">PATCH → SHIPPED</button>
+    <button id="cancel">POST annulation</button>
+  </section>
+
+  <section>
+    <h2>Journal</h2>
+    <pre id="log" aria-live="polite"></pre>
+  </section>
+  <script type="module" src="/demo/app.js"></script>
+</body>
+</html>
