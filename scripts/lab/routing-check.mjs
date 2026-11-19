@@ -33,7 +33,8 @@ const queueOf = (name) => `probe.${id}.${name}`;
 await mgmt('PUT', `/exchanges/${V}/${exchange}`, { type: 'topic', durable: false, auto_delete: false });
 try {
   for (const [name, pattern] of Object.entries(patterns)) {
-    await mgmt('PUT', `/queues/${V}/${queueOf(name)}`, { durable: false, auto_delete: false });
+    // Durable (supprimée dans `finally`) : RabbitMQ 4 déprécie les queues non durables et non exclusives (transient_nonexcl_queues).
+    await mgmt('PUT', `/queues/${V}/${queueOf(name)}`, { durable: true, auto_delete: false, arguments: { 'x-queue-type': 'classic' } });
     await mgmt('POST', `/bindings/${V}/e/${exchange}/q/${queueOf(name)}`, { routing_key: pattern });
   }
   // clé de test -> files attendues (sémantique AMQP : `*` = exactement un mot ; `#` = zéro ou plusieurs mots)
