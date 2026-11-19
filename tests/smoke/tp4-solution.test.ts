@@ -124,7 +124,15 @@ describe('smoke - TP4 worker (configuration et injections)', () => {
       let out = '';
       child.stdout.on('data', (c: Buffer) => (out += String(c)));
       const exit = await new Promise<{ code: number | null; signal: string | null }>((resolve) => child.once('exit', (code, signal) => resolve({ code, signal })));
-      assert.equal(exit.signal, 'SIGKILL');
+
+      if (process.platform === 'win32') {
+        // Windows n'a pas de signaux POSIX : process.kill(pid, 'SIGKILL') termine brutalement le processus
+        // (TerminateProcess) avec un code de sortie non nul et sans signal.
+        assert.equal(exit.signal, null);
+        assert.notEqual(exit.code, 0);
+      } else {
+        assert.equal(exit.signal, 'SIGKILL');
+      }
       assert.doesNotMatch(out, /SURVECU/);
     } finally {
       rmSync(dir, { recursive: true, force: true });
